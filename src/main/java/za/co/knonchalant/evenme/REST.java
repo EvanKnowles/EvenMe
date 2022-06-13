@@ -55,11 +55,9 @@ public class REST {
         }
 
 
-//        System.out.println(resultUrl);
         URL obj = new URL(resultUrl);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-        //add reuqest header
         con.setRequestMethod("GET");
 //        con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
 //        con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
@@ -73,7 +71,6 @@ public class REST {
         }
         try {
             int responseCode = con.getResponseCode();
-            System.out.println(responseCode);
         } catch (Exception ex) {
             ex.printStackTrace();
             return convertStream(con.getErrorStream());
