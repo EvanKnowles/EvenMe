@@ -47,10 +47,10 @@ public class ChatGPT {
     public static ChatGPTResponse submit(String prompt) throws IOException {
         ChatGPTRequest chatGPTRequest = new ChatGPTRequest();
         chatGPTRequest.setTemperature(0.2);
-        chatGPTRequest.setModel("gpt-3.5-turbo");
+        chatGPTRequest.setModel("gpt-4o");
         Message message = new Message();
         message.setRole("user");
-        message.setContent(prompt);
+        message.setContent(prompt.replaceAll("\\P{ASCII}", ""));
         chatGPTRequest.setMessages(List.of(message));
         return REST.url("https://api.openai.com/v1/chat/completions")
                 .body(chatGPTRequest)
