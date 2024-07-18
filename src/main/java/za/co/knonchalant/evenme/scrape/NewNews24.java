@@ -11,8 +11,13 @@ import za.co.knonchalant.evenme.chatgpt.ChatGPT;
 import za.co.knonchalant.evenme.chatgpt.domain.ChatGPTResponse;
 import za.co.knonchalant.evenme.scrape.domain.ArticleResult;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,9 +28,9 @@ public class NewNews24 {
     private static final Map<String, String> COOKIES = new HashMap<>();
     public static final String PROMPT =
             "Create Cypher syntax for all facts from the following news article. Create statements that do not fail on create if the data already exists. Create links between nodes. \n" +
-            "Use the following terms: Event, Individual, Outcome, Company, Party, Organization.\n" +
-            "Include descriptions as attributes on nodes.\n" +
-            "Include dates where available as attributes on nodes.";
+                    "Use the following terms: Event, Individual, Outcome, Company, Party, Organization.\n" +
+                    "Include descriptions as attributes on nodes.\n" +
+                    "Include dates where available as attributes on nodes.";
 
     static {
         COOKIES.put("24cat", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjEzMDYyNTcsIm5iZiI6MTcyMTI5OTA1NywiZXhwIjoxNzIxMzAyNjU0LCJ1c2VyIjp7ImlkIjoiWEpzc0NIeXlIdVgwMUFlRFpjU29OVTkxV1UwMyIsImVtYWlsIjoicGlyYXRlYW5nZWxAZ21haWwuY29tIiwidXNlcm5hbWUiOiJFdmFuIEtub3dsZXMifX0.Ny_xcVm8GDb60aNVnpq-jb93NrkX58TmNw6ECAuyhYw");
@@ -41,6 +46,15 @@ public class NewNews24 {
             stringBuilder.append(stringStringEntry.getKey()).append("=").append(stringStringEntry.getValue()).append("; ");
         }
 
+        Path articleCache = Paths.get("articles");
+        if (!articleCache.toFile().exists()) {
+            articleCache.toFile().mkdirs();
+        }
+
+        Path cypherCache = Paths.get("cypher");
+        if (!cypherCache.toFile().exists()) {
+            cypherCache.toFile().mkdirs();
+        }
         headers.put("Cookie", stringBuilder.toString());
 
         String result = REST.sendGet(URL, Collections.emptyMap(), headers);
@@ -51,18 +65,42 @@ public class NewNews24 {
         List<ArticleResult> articleResults = new Gson().fromJson(result, type);
 
         for (ArticleResult articleResult : articleResults) {
-            String articleUrl = articleResult.getArticleUrl();
-            Document document = Jsoup.connect(articleUrl)
-                    .headers(headers)
-                    .get();
-            Elements select = document.select(".article__body");
-            System.out.println(select.text());
-            ChatGPTResponse submit = ChatGPT.submit(PROMPT +"\n" + select.text());
-            System.out.println(submit.getChoices().get(0).getMessage().getContent());
+            String normalizedTitle = articleResult.getTitle().replaceAll(" ", "_");
+            Path article = articleCache.resolve(normalizedTitle + ".html");
+            String contents;
+            if (!article.toFile().exists()) {
+                String articleUrl = articleResult.getArticleUrl();
+                Document document = Jsoup.connect(articleUrl)
+                        .headers(headers)
+                        .get();
+                Elements lockedElement = document.select(".article__body--locked");
+                if (!lockedElement.isEmpty()) {
+                    System.out.println("News24 cookie has expired, quitting.");
+                    break;
+                }
+
+                Elements select = document.select(".article__body");
+                contents = select.text();
+                Files.write(article, select.text().getBytes(StandardCharsets.UTF_8));
+                System.out.println("Retrieved: \"" + articleResult.getTitle() + "\"");
+
+            } else {
+                contents = Files.readString(article);
+                System.out.println("\"" + articleResult.getTitle() + "\" was already in cache");
+            }
+
+            Path cypher = cypherCache.resolve(normalizedTitle + ".cyp");
+            if (!cypher.toFile().exists()) {
+                ChatGPTResponse submit = ChatGPT.submit(PROMPT + "\n" + contents);
+                String cypherResult = submit.getChoices().get(0).getMessage().getContent();
+                Files.write(cypher, cypherResult.getBytes(StandardCharsets.UTF_8));
+                System.out.println("Cypher'd: \"" + articleResult.getTitle() + "\"");
+            } else {
+                System.out.println("\"" + articleResult.getTitle() + "\" was already in cypher'd");
+            }
+
             break;
         }
-
-        System.out.println(articleResults);
 
         return Collections.emptyMap();
     }
