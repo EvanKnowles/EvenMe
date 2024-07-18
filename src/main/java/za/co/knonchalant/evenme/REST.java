@@ -9,20 +9,11 @@ import java.util.Map;
 public class REST {
 
 
-    public static String sendPost(String url, String urlParameters, Map<String, String> headers) throws IOException {
+    public static String sendPost(String url, String body, Map<String, String> headers) throws IOException {
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-        //add reuqest header
         con.setRequestMethod("POST");
-//        con.setRequestProperty("Content-Type", "text/plain");
-////        con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
-//        con.setRequestProperty("Connection", "keep-alive");
-//        con.setRequestProperty("Proxy-Connection", "keep-alive");
-//        con.setRequestProperty("Accept", "*/*");
-//        con.setRequestProperty("Accept-Language", "en-ZA;q=1.0, bg-ZA;q=0.9");
-//        con.setRequestProperty("User-Agent", "Ster-Kinekor/4.56.600 CFNetwork/808.2.16 Darwin/16.3.0");
-//        con.setRequestProperty("Content-Length", String.valueOf(urlParameters.length()));
 
         for (Map.Entry<String, String> stringStringEntry : headers.entrySet()) {
             con.setRequestProperty(stringStringEntry.getKey(), stringStringEntry.getValue());
@@ -31,14 +22,9 @@ public class REST {
         // Send post request
         con.setDoOutput(true);
         DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-        wr.writeBytes(urlParameters);
+        wr.writeBytes(body);
         wr.flush();
         wr.close();
-
-        int responseCode = con.getResponseCode();
-//        System.out.println("\nSending 'POST' request to URL : " + url);
-//        System.out.println("Post parameters : " + urlParameters);
-//        System.out.println("Response Code : " + responseCode);
 
         return convertStream(con.getInputStream());
     }
