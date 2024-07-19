@@ -6,6 +6,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import za.co.knonchalant.evenme.Article;
 import za.co.knonchalant.evenme.Environment;
 import za.co.knonchalant.evenme.REST;
@@ -13,7 +15,6 @@ import za.co.knonchalant.evenme.chatgpt.ChatGPT;
 import za.co.knonchalant.evenme.chatgpt.domain.ChatGPTResponse;
 import za.co.knonchalant.evenme.scrape.domain.ArticleResult;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
@@ -26,9 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 public class NewNews24 {
+    private static final Logger LOG = LoggerFactory.getLogger(NewNews24.class);
     public static final String URL = "https://cms.capi24.com/v2/Articles/category/%2Fnews24%2Fpolitics?pageNo=1&pageSize=15";
-    private static final Map<String, String> COOKIES = new HashMap<>();
-
     public static final String PROMPT =
             "Create Cypher syntax for all facts from the following news article. Only output the Cypher result, nothing else.\n" +
                     "Create statements that do not fail on create if the data already exists. Create links between nodes. \n" +
@@ -36,16 +36,18 @@ public class NewNews24 {
                     "Include descriptions as attributes on nodes.\n" +
                     "Include dates where available as attributes on nodes.";
 
+    private final Map<String, String> cookies = new HashMap<>();
+
     public NewNews24(Environment environment) {
-        COOKIES.put("24cat", environment.catCookie);
-        COOKIES.put("24uat", environment.uatCookie);
-        COOKIES.put("24uid", environment.uidCookie);
+        cookies.put("24cat", environment.catCookie);
+        cookies.put("24uat", environment.uatCookie);
+        cookies.put("24uid", environment.uidCookie);
     }
 
     public Map<String, Article> get() throws IOException {
         Map<String, String> headers = new HashMap<>();
         StringBuilder stringBuilder = new StringBuilder();
-        for (Map.Entry<String, String> stringStringEntry : COOKIES.entrySet()) {
+        for (Map.Entry<String, String> stringStringEntry : cookies.entrySet()) {
             stringBuilder.append(stringStringEntry.getKey()).append("=").append(stringStringEntry.getValue()).append("; ");
         }
 
@@ -67,41 +69,53 @@ public class NewNews24 {
 
         List<ArticleResult> articleResults = new Gson().fromJson(result, type);
 
-        for (ArticleResult articleResult : articleResults) {
-            String normalizedTitle = normalizeTitle(articleResult.getTitle());
-            Path article = articleCache.resolve(normalizedTitle + ".html");
-            String contents;
-            if (!article.toFile().exists()) {
-                String articleUrl = articleResult.getArticleUrl();
-                Document document = Jsoup.connect(articleUrl).headers(headers).get();
-                Elements lockedElement = document.select(".article__body--locked");
-                if (!lockedElement.isEmpty()) {
-                    System.out.println("News24 cookie has expired, quitting.");
-                    break;
+        try {
+            for (ArticleResult articleResult : articleResults) {
+                String normalizedTitle = normalizeTitle(articleResult.getTitle());
+                Path article = articleCache.resolve(normalizedTitle + ".html");
+                String contents;
+                contents = loadArticle(articleResult, article, headers);
+
+                Path cypher = cypherCache.resolve(normalizedTitle + ".cyp");
+                if (!cypher.toFile().exists()) {
+                    ChatGPTResponse submit = ChatGPT.submit(PROMPT + "\n" + contents);
+                    String cypherResult = submit.getChoices().get(0).getMessage().getContent();
+                    Files.write(cypher, cypherResult.getBytes(StandardCharsets.UTF_8));
+                    LOG.debug("Cypher'd: \"{}\"", articleResult.getTitle());
+                } else {
+                    LOG.debug("\"{}\" was already in cypher'd", articleResult.getTitle());
                 }
-
-                Elements select = document.select(".article__body");
-                contents = select.text();
-                Files.write(article, select.text().getBytes(StandardCharsets.UTF_8));
-                System.out.println("Retrieved: \"" + articleResult.getTitle() + "\"");
-
-            } else {
-                contents = Files.readString(article);
-                System.out.println("\"" + articleResult.getTitle() + "\" was already in cache");
             }
+        } catch (InvalidNews24CookieException ignored) {
+            LOG.warn("News24 cookie has expired, quitting.");
+        }
+        return Collections.emptyMap();
+    }
 
-            Path cypher = cypherCache.resolve(normalizedTitle + ".cyp");
-            if (!cypher.toFile().exists()) {
-                ChatGPTResponse submit = ChatGPT.submit(PROMPT + "\n" + contents);
-                String cypherResult = submit.getChoices().get(0).getMessage().getContent();
-                Files.write(cypher, cypherResult.getBytes(StandardCharsets.UTF_8));
-                System.out.println("Cypher'd: \"" + articleResult.getTitle() + "\"");
-            } else {
-                System.out.println("\"" + articleResult.getTitle() + "\" was already in cypher'd");
-            }
+    private static String loadArticle(ArticleResult articleResult, Path article, Map<String, String> headers) throws IOException, InvalidNews24CookieException {
+        String contents;
+        if (article.toFile().exists()) {
+            LOG.debug("\"{}\" was already in cache", articleResult.getTitle());
+            contents = Files.readString(article);
+            return contents;
         }
 
-        return Collections.emptyMap();
+        Elements body = scrapeArticle(articleResult, headers);
+        contents = body.text();
+        Files.write(article, contents.getBytes(StandardCharsets.UTF_8));
+        LOG.info("Retrieved: \"{}\"", articleResult.getTitle());
+        return contents;
+    }
+
+    private static Elements scrapeArticle(ArticleResult articleResult, Map<String, String> headers) throws IOException, InvalidNews24CookieException {
+        String articleUrl = articleResult.getArticleUrl();
+        Document document = Jsoup.connect(articleUrl).headers(headers).get();
+        Elements lockedElement = document.select(".article__body--locked");
+        if (!lockedElement.isEmpty()) {
+            throw new InvalidNews24CookieException();
+        }
+
+        return document.select(".article__body");
     }
 
     public static String normalizeTitle(String title) {
