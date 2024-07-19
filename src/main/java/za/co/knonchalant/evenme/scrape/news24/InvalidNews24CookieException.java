@@ -1,4 +1,4 @@
-package za.co.knonchalant.evenme.scrape;
+package za.co.knonchalant.evenme.scrape.news24;
 
 public class InvalidNews24CookieException extends Exception {
     public InvalidNews24CookieException(String url) {

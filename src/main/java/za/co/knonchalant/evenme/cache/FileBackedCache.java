@@ -2,7 +2,7 @@ package za.co.knonchalant.evenme.cache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import za.co.knonchalant.evenme.scrape.InvalidNews24CookieException;
+import za.co.knonchalant.evenme.scrape.news24.InvalidNews24CookieException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

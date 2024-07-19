@@ -1,5 +1,5 @@
 
-package za.co.knonchalant.evenme.scrape.domain;
+package za.co.knonchalant.evenme.scrape.news24.domain;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

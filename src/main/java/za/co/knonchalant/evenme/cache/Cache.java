@@ -1,6 +1,6 @@
 package za.co.knonchalant.evenme.cache;
 
-import za.co.knonchalant.evenme.scrape.InvalidNews24CookieException;
+import za.co.knonchalant.evenme.scrape.news24.InvalidNews24CookieException;
 
 import java.io.IOException;
 
