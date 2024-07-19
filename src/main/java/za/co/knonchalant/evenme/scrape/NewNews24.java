@@ -5,7 +5,9 @@ import com.google.gson.reflect.TypeToken;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+
 import za.co.knonchalant.evenme.Article;
+import za.co.knonchalant.evenme.Environment;
 import za.co.knonchalant.evenme.REST;
 import za.co.knonchalant.evenme.chatgpt.ChatGPT;
 import za.co.knonchalant.evenme.chatgpt.domain.ChatGPTResponse;
@@ -26,6 +28,7 @@ import java.util.Map;
 public class NewNews24 {
     public static final String URL = "https://cms.capi24.com/v2/Articles/category/%2Fnews24%2Fpolitics?pageNo=1&pageSize=15";
     private static final Map<String, String> COOKIES = new HashMap<>();
+
     public static final String PROMPT =
             "Create Cypher syntax for all facts from the following news article. Only output the Cypher result, nothing else.\n" +
                     "Create statements that do not fail on create if the data already exists. Create links between nodes. \n" +
@@ -33,14 +36,13 @@ public class NewNews24 {
                     "Include descriptions as attributes on nodes.\n" +
                     "Include dates where available as attributes on nodes.";
 
-    static {
-        COOKIES.put("24cat", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjEzMDk5NzksIm5iZiI6MTcyMTMwMjc3OSwiZXhwIjoxNzIxMzA2Mzc3LCJ1c2VyIjp7ImlkIjoiWEpzc0NIeXlIdVgwMUFlRFpjU29OVTkxV1UwMyIsImVtYWlsIjoicGlyYXRlYW5nZWxAZ21haWwuY29tIiwidXNlcm5hbWUiOiJFdmFuIEtub3dsZXMifX0.wzED6yi4_4mhQOlakJRgHPpRCv_P3X7QBA65FnLOD5U");
-        COOKIES.put("24uat", "eyJhbGciOiJSUzI1NiIsImtpZCI6ImMxNTQwYWM3MWJiOTJhYTA2OTNjODI3MTkwYWNhYmU1YjA1NWNiZWMiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiRXZhbiBKYW1lcyBLbm93bGVzIiwicGljdHVyZSI6Imh0dHBzOi8vZ3JhcGguZmFjZWJvb2suY29tLzg1NjE0MDExMS9waWN0dXJlIiwidGZfYm9va21hcmtzIjp0cnVlLCJ0Zl90cmFmZmljX2FsbCI6dHJ1ZSwidGZfd2VhdGhlcl9hbGwiOnRydWUsInRmX25ld3NsZXR0ZXJzX2ZyZWUiOnRydWUsInRmX3JlZ2lzdGVyZWQiOnRydWUsInRmX2NvbW1lbnRzIjp0cnVlLCJ0Zl9hcnRpY2xlX2F1ZGlvIjp0cnVlLCJ0Zl9wZGYiOnRydWUsInRmX2FydGljbGVzIjp0cnVlLCJ0Zl9uZXdzbGV0dGVyc19hbGwiOnRydWUsInRmX3N1YnNjcmliZWQiOnRydWUsInRmX3VzZXJUeXBlIjozLCJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vdHdlbnR5Zm91ci1lbmdsaXNoLWxpdmUiLCJhdWQiOiJ0d2VudHlmb3VyLWVuZ2xpc2gtbGl2ZSIsImF1dGhfdGltZSI6MTcyMTI5MjI3MSwidXNlcl9pZCI6IlhKc3NDSHl5SHVYMDFBZURaY1NvTlU5MVdVMDMiLCJzdWIiOiJYSnNzQ0h5eUh1WDAxQWVEWmNTb05VOTFXVTAzIiwiaWF0IjoxNzIxMzAyNzc3LCJleHAiOjE3MjEzMDYzNzcsImVtYWlsIjoicGlyYXRlYW5nZWxAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsicGlyYXRlYW5nZWxAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.kQwgJ9tgYXWueaJiwTlOPUFX_DBNBe01j_7MgNuemvAWMS32CNTAnwtgysFKGjNP2lRl_CWuitNIQVy_eDXCdcRXdHYQ-ZouPjiWOL_ViYXb0xZlT5r9N1y_zrrIq5BdnlDKM6LheRQGLtQNkM9L3a2ttGlKG16S9oKe_DocDEa2cojZpIO7TLQG4bdAZljkmLi0K0Ob7vAB7oTD_3Z45kTYR09ySYU-CuJuT47MurHn3MP1DlbKwFfcuyttqsdG17TTXZZH0TBMdbW_COFsSJQr06YUuBlj1eGvzTewBPw4RTkNJeckcB7V3mw5eooRA3WJFGbvDxW1Vbp9ZvGN2w");
-        COOKIES.put("24uid", "7496c1ea-4eb1-4450-9214-9d46ab4fba2a");
+    public NewNews24(Environment environment) {
+        COOKIES.put("24cat", environment.catCookie);
+        COOKIES.put("24uat", environment.uatCookie);
+        COOKIES.put("24uid", environment.uidCookie);
     }
 
-    public static Map<String, Article> get() throws IOException {
-        Map<String, Article> map = new HashMap<String, Article>();
+    public Map<String, Article> get() throws IOException {
         Map<String, String> headers = new HashMap<>();
         StringBuilder stringBuilder = new StringBuilder();
         for (Map.Entry<String, String> stringStringEntry : COOKIES.entrySet()) {
@@ -71,9 +73,7 @@ public class NewNews24 {
             String contents;
             if (!article.toFile().exists()) {
                 String articleUrl = articleResult.getArticleUrl();
-                Document document = Jsoup.connect(articleUrl)
-                        .headers(headers)
-                        .get();
+                Document document = Jsoup.connect(articleUrl).headers(headers).get();
                 Elements lockedElement = document.select(".article__body--locked");
                 if (!lockedElement.isEmpty()) {
                     System.out.println("News24 cookie has expired, quitting.");
@@ -105,6 +105,6 @@ public class NewNews24 {
     }
 
     public static String normalizeTitle(String title) {
-        return title.replaceAll("[^a-zA-Z0-9 ]","").replaceAll(" ", "_");
+        return title.replaceAll("[^a-zA-Z0-9 ]", "").replaceAll(" ", "_");
     }
 }
