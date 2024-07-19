@@ -1,18 +1,16 @@
 package za.co.knonchalant.evenme.scrape;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import za.co.knonchalant.evenme.Article;
 import za.co.knonchalant.evenme.Environment;
-import za.co.knonchalant.evenme.REST;
 import za.co.knonchalant.evenme.chatgpt.ChatGPT;
 import za.co.knonchalant.evenme.chatgpt.domain.ChatGPTResponse;
+import za.co.knonchalant.evenme.client.REST;
 import za.co.knonchalant.evenme.scrape.domain.ArticleResult;
 
 import java.io.IOException;
@@ -62,12 +60,10 @@ public class NewNews24 {
         }
         headers.put("Cookie", stringBuilder.toString());
 
-        String result = REST.sendGet(URL, Collections.emptyMap(), headers);
-
         Type type = new TypeToken<List<ArticleResult>>() {
         }.getType();
 
-        List<ArticleResult> articleResults = new Gson().fromJson(result, type);
+        List<ArticleResult> articleResults = REST.url(URL).headers(headers).get(type);
 
         try {
             for (ArticleResult articleResult : articleResults) {
@@ -110,7 +106,9 @@ public class NewNews24 {
     private static Elements scrapeArticle(ArticleResult articleResult, Map<String, String> headers) throws IOException, InvalidNews24CookieException {
         String articleUrl = articleResult.getArticleUrl();
         Document document = Jsoup.connect(articleUrl).headers(headers).get();
+
         Elements lockedElement = document.select(".article__body--locked");
+
         if (!lockedElement.isEmpty()) {
             throw new InvalidNews24CookieException();
         }
@@ -118,7 +116,7 @@ public class NewNews24 {
         return document.select(".article__body");
     }
 
-    public static String normalizeTitle(String title) {
+    private static String normalizeTitle(String title) {
         return title.replaceAll("[^a-zA-Z0-9 ]", "").replaceAll(" ", "_");
     }
 }
