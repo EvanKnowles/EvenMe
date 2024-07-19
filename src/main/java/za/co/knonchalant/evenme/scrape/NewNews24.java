@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import za.co.knonchalant.evenme.Article;
 import za.co.knonchalant.evenme.Environment;
-import za.co.knonchalant.evenme.REST;
+import za.co.knonchalant.evenme.client.REST;
 import za.co.knonchalant.evenme.cache.*;
 import za.co.knonchalant.evenme.chatgpt.cypher.ChatGPTCypherBuilder;
 import za.co.knonchalant.evenme.scrape.domain.ArticleResult;
@@ -62,7 +62,7 @@ public class NewNews24 {
 
     private List<ArticleResult> retrieveArticlesList() throws IOException {
         Map<String, String> headers = buildHeaders();
-        String result = REST.sendGet(URL, Collections.emptyMap(), headers);
+        String result = REST.url(URL).headers(headers).get();
 
         Type type = new TypeToken<List<ArticleResult>>() {
         }.getType();
@@ -93,7 +93,7 @@ public class NewNews24 {
         return cache;
     }
 
-    public static String normalizeTitle(String title) {
+    private static String normalizeTitle(String title) {
         return title.replaceAll("[^a-zA-Z0-9 ]", "").replaceAll(" ", "_");
     }
 }
