@@ -5,9 +5,11 @@ import za.co.knonchalant.evenme.Environment;
 import za.co.knonchalant.evenme.cache.CacheException;
 import za.co.knonchalant.evenme.cache.FileBackedCache;
 import za.co.knonchalant.evenme.chatgpt.cypher.ChatGPTCypherBuilder;
-import za.co.knonchalant.evenme.scrape.news24.InvalidNews24CookieException;
+import za.co.knonchalant.evenme.scrape.iol.IOLArticleListRetriever;
+import za.co.knonchalant.evenme.scrape.news24.InvalidCookieException;
 import za.co.knonchalant.evenme.scrape.news24.ArticleProcessor;
 import za.co.knonchalant.evenme.scrape.news24.News24ArticleListRetriever;
+import za.co.knonchalant.evenme.scrape.sowetan.SowetanArticleListRetriever;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -19,7 +21,7 @@ public class TestNews24 {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestNews24.class);
 
-    public static void main(String[] args) throws IOException, InvalidNews24CookieException {
+    public static void main(String[] args) throws IOException, InvalidCookieException {
         FileBackedCache cypherCache = new FileBackedCache(resolveCachePath("cypher"), new ChatGPTCypherBuilder());
         Environment environment = Environment.fromHardcode();
 
@@ -29,14 +31,13 @@ public class TestNews24 {
         cookies.put("24uat", environment.uatCookie);
         cookies.put("24uid", environment.uidCookie);
 
-        ArticleProcessor news24 = new ArticleProcessor(new News24ArticleListRetriever(cookies));
+        ArticleProcessor news24 = new ArticleProcessor(new News24ArticleListRetriever(cookies), new SowetanArticleListRetriever());
 
         try {
             Map<String, Article> articles = news24.get();
             for (Map.Entry<String, Article> stringArticleEntry : articles.entrySet()) {
                 Article article = stringArticleEntry.getValue();
                 String cypherResult = readCypherContent(cypherCache, article.getArticle(), article.getNormalized());
-                LOG.info("Cypher'd: {}", article.getName());
             }
 
         } catch (CacheException e) {
@@ -44,7 +45,7 @@ public class TestNews24 {
         }
     }
 
-    private static String readCypherContent(FileBackedCache cypherCache, String articleContent, String normalizedTitle) throws IOException, InvalidNews24CookieException {
+    private static String readCypherContent(FileBackedCache cypherCache, String articleContent, String normalizedTitle) throws IOException, InvalidCookieException {
         return cypherCache.get(articleContent, normalizedTitle + ".cyp");
     }
 

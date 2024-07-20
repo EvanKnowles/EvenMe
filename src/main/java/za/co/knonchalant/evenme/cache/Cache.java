@@ -1,6 +1,6 @@
 package za.co.knonchalant.evenme.cache;
 
-import za.co.knonchalant.evenme.scrape.news24.InvalidNews24CookieException;
+import za.co.knonchalant.evenme.scrape.news24.InvalidCookieException;
 
 import java.io.IOException;
 
@@ -11,11 +11,11 @@ public abstract class Cache {
         this.cachePopulator = cachePopulator;
     }
 
-    public abstract String get(String populateDetail, String title) throws IOException, InvalidNews24CookieException;
+    public abstract String get(String populateDetail, String title) throws IOException, InvalidCookieException;
 
     protected abstract String queryFromCache(String title) throws IOException;
 
-    protected abstract String readFromUnderlyingSource(String populateDetail) throws IOException, InvalidNews24CookieException;
+    protected abstract String readFromUnderlyingSource(String populateDetail) throws IOException, InvalidCookieException;
 
     protected CachePopulator getCachePopulator() {
         return cachePopulator;

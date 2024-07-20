@@ -16,11 +16,11 @@ public class News24Scraper implements CachePopulator {
     }
 
     @Override
-    public String populate(String url) throws InvalidNews24CookieException, IOException {
+    public String populate(String url) throws InvalidCookieException, IOException {
         Document document = Jsoup.connect(url).cookies(cookies).get();
         Elements lockedElement = document.select(".article__body--locked");
         if (!lockedElement.isEmpty()) {
-            throw new InvalidNews24CookieException(url);
+            throw new InvalidCookieException(url);
         }
 
         Elements body = document.select(".article__body");

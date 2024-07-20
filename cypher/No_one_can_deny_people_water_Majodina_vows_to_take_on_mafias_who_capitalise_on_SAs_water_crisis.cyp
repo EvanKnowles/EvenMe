@@ -1,0 +1,48 @@
+```cypher
+MERGE (pemmy:Individual {name: "Pemmy Majodina", description: "Water and Sanitation Minister of South Africa"})
+MERGE (cyril:Individual {name: "Cyril Ramaphosa", description: "President of South Africa"})
+MERGE (lesothoGov:Organization {name: "Lesotho Government", description: "Government of Lesotho"})
+MERGE (cabinet:Organization {name: "Cabinet", description: "South African Cabinet"})
+MERGE (siu:Organization {name: "Special Investigating Unit", description: "Special Investigating Unit of South Africa"})
+MERGE (miningSector:Organization {name: "Mining Sector", description: "Mining sector in South Africa"})
+MERGE (waterCrisis:Event {name: "South African Water Crisis", description: "Ongoing water crisis in South Africa"})
+MERGE (lesothoHighlands:Event {name: "Lesotho Highlands Water Project Phase Two", description: "Phase two of the Lesotho Highlands water project"})
+MERGE (hammanskraal:Event {name: "Hammanskraal Water Project Phase One", description: "Phase one of the Hammanskraal water project"})
+MERGE (vryburg:Event {name: "Vryburg Water Crisis", description: "Man-made water crisis in Vryburg"})
+MERGE (choleraDeaths:Event {name: "Cholera Deaths in Hammanskraal", description: "Deaths from cholera in Hammanskraal due to leadership failures"})
+MERGE (waterMafias:Organization {name: "Water Mafias", description: "Groups capitalizing on South Africa's water crisis"})
+MERGE (constitution:Organization {name: "South African Constitution", description: "Constitution of South Africa"})
+MERGE (waterAssociations:Organization {name: "Water Associations", description: "Water associations to be launched by the Department of Water and Sanitation"})
+
+MERGE (pemmy)-[:PRIORITIZES]->(waterMafias)
+MERGE (pemmy)-[:WILL_MEET]->(lesothoGov)
+MERGE (pemmy)-[:DECLARED_WAR_ON]->(waterMafias)
+MERGE (pemmy)-[:REQUESTED_PROTECTION_FROM]->(cabinet)
+MERGE (pemmy)-[:AWARE_OF]->(waterCrisis)
+MERGE (pemmy)-[:INTERVENING_IN]->(hammanskraal)
+MERGE (pemmy)-[:INTERVENING_IN]->(vryburg)
+MERGE (pemmy)-[:INTERVENING_IN]->(lesothoHighlands)
+MERGE (pemmy)-[:INTERVENING_IN]->(choleraDeaths)
+MERGE (pemmy)-[:WORKING_WITH]->(miningSector)
+MERGE (pemmy)-[:LAUNCHING]->(waterAssociations)
+MERGE (pemmy)-[:COMMITTED_TO]->(waterCrisis)
+MERGE (pemmy)-[:REFERENCED]->(constitution)
+MERGE (pemmy)-[:MENTIONED]->(siu)
+
+MERGE (cyril)-[:HIGHLIGHTED]->(waterCrisis)
+MERGE (cyril)-[:ADDRESSED]->(waterCrisis)
+
+MERGE (lesothoHighlands)-[:BENEFITS]->(pemmy)
+MERGE (lesothoHighlands)-[:BENEFITS]->(lesothoGov)
+MERGE (lesothoHighlands)-[:BENEFITS]->(gauteng:Organization {name: "Gauteng", description: "Province in South Africa"})
+MERGE (lesothoHighlands)-[:BENEFITS]->(freeState:Organization {name: "Free State", description: "Province in South Africa"})
+MERGE (lesothoHighlands)-[:BENEFITS]->(mpumalanga:Organization {name: "Mpumalanga", description: "Province in South Africa"})
+MERGE (lesothoHighlands)-[:BENEFITS]->(northWest:Organization {name: "North West", description: "Province in South Africa"})
+
+MERGE (hammanskraal)-[:PHASE_ONE_HANDOVER]->(pemmy)
+MERGE (hammanskraal)-[:PHASE_ONE_HANDOVER_DATE {date: "2023-10"}]->(pemmy)
+
+MERGE (vryburg)-[:DESCRIBED_BY]->(pemmy)
+
+MERGE (choleraDeaths)-[:DUE_TO]->(pemmy)
+```

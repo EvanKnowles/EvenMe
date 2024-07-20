@@ -8,7 +8,8 @@ import java.io.IOException;
 
 public class ChatGPTCypherBuilder implements CachePopulator {
     public static final String PROMPT =
-            "Create Cypher syntax for all facts from the following news article. Only output the Cypher result, nothing else.\n" +
+            "First judge if this is an article about political events or politicians. If it is not, then only return a blank line.\n" +
+                    "Otherwise, create Cypher syntax for all facts from the following news article. Only output the Cypher result, nothing else.\n" +
                     "Create statements that do not fail on create if the data already exists. Create links between nodes. \n" +
                     "Use the following terms: Event, Individual, Outcome, Company, Party, Organization.\n" +
                     "Include descriptions as attributes on nodes.\n" +

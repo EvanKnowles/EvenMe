@@ -1,0 +1,21 @@
+```cypher
+MERGE (event1:Event {name: "NHLS Cyberattack", description: "Cyberattack on National Health Laboratory Services", date: "2023-06-30"})
+MERGE (org1:Organization {name: "National Health Laboratory Services", description: "National Health Laboratory Services"})
+MERGE (org2:Organization {name: "Gauteng Department of Health", description: "Gauteng Department of Health"})
+MERGE (ind1:Individual {name: "Motaletale Modiba", description: "Gauteng health spokesperson"})
+MERGE (outcome1:Outcome {name: "Abnormal Delays", description: "Abnormal delays in health services due to cyberattack"})
+MERGE (outcome2:Outcome {name: "Improved Service Level", description: "Improved service level at Gauteng health facilities"})
+MERGE (event2:Event {name: "Surgical Marathon Initiative", description: "Second edition of the surgical marathon initiative", date: "2023-07-06"})
+MERGE (outcome3:Outcome {name: "740 Surgeries", description: "740 surgeries carried out, outperforming the target for the day and the previous year"})
+
+MERGE (org1)-[:EXPERIENCED]->(event1)
+MERGE (org2)-[:AFFECTED_BY]->(event1)
+MERGE (event1)-[:CAUSED]->(outcome1)
+MERGE (event1)-[:LED_TO]->(outcome2)
+MERGE (org2)-[:IMPLEMENTED]->(event2)
+MERGE (event2)-[:RESULTED_IN]->(outcome3)
+MERGE (ind1)-[:SPOKE_ABOUT]->(event1)
+MERGE (ind1)-[:SPOKE_ABOUT]->(outcome1)
+MERGE (ind1)-[:SPOKE_ABOUT]->(outcome2)
+MERGE (ind1)-[:SPOKE_ABOUT]->(outcome3)
+```

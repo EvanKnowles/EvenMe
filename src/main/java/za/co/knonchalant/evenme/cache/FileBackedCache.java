@@ -2,7 +2,7 @@ package za.co.knonchalant.evenme.cache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import za.co.knonchalant.evenme.scrape.news24.InvalidNews24CookieException;
+import za.co.knonchalant.evenme.scrape.news24.InvalidCookieException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +20,7 @@ public class FileBackedCache extends Cache {
     }
 
     @Override
-    public String get(String populateDetail, String title) throws IOException, InvalidNews24CookieException {
+    public String get(String populateDetail, String title) throws IOException, InvalidCookieException {
         String contents = queryFromCache(title);
         if (contents != null) {
             LOG.debug("\"{}\" was already in cache", title);
@@ -29,12 +29,13 @@ public class FileBackedCache extends Cache {
 
         contents = readFromUnderlyingSource(populateDetail);
         Files.write(determineFileForCache(title), contents.getBytes(StandardCharsets.UTF_8));
-        LOG.info("Retrieved: \"{}\"", title);
+        LOG.info("Processed: \"{}\"", title);
+
         return contents;
     }
 
     @Override
-    protected String readFromUnderlyingSource(String populateDetail) throws IOException, InvalidNews24CookieException {
+    protected String readFromUnderlyingSource(String populateDetail) throws IOException, InvalidCookieException {
         return getCachePopulator().populate(populateDetail);
     }
 

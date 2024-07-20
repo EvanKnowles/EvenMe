@@ -32,7 +32,7 @@ public class News24ArticleListRetriever implements ArticleListRetriever {
 
         List<ArticleResult> articleResults = new Gson().fromJson(result, type);
 
-        articleResults.removeIf(a -> a.getTitle().startsWith("LIVE |"));
+        articleResults.removeIf(a -> a.getTitle().startsWith("LIVE |") || a.getTitle().startsWith("BREAKING |"));
 
         return articleResults;
     }

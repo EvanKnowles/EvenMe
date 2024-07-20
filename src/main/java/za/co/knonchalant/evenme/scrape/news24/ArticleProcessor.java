@@ -1,19 +1,13 @@
 package za.co.knonchalant.evenme.scrape.news24;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import za.co.knonchalant.evenme.Article;
-import za.co.knonchalant.evenme.Environment;
-import za.co.knonchalant.evenme.client.REST;
 import za.co.knonchalant.evenme.cache.*;
 import za.co.knonchalant.evenme.scrape.ArticleListRetriever;
 import za.co.knonchalant.evenme.scrape.news24.domain.ArticleResult;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -29,7 +23,7 @@ public class ArticleProcessor {
         this.retrievers = retrievers;
     }
 
-    public Map<String, Article> get() throws IOException, InvalidNews24CookieException, CacheException {
+    public Map<String, Article> get() throws IOException, InvalidCookieException, CacheException {
         HashMap<String, Article> stringArticleHashMap = new HashMap<>();
 
         for (ArticleListRetriever retriever : retrievers) {
@@ -39,7 +33,6 @@ public class ArticleProcessor {
 
             FileBackedCache articleCache = new FileBackedCache(resolveCachePath("articles"), retriever.getCachePopulator());
 
-            // Download each article:
             for (ArticleResult articleResult : articleResults) {
                 String normalizedTitle = normalizeTitle(articleResult.getTitle());
                 String articleContent = readArticleContent(articleResult, articleCache, normalizedTitle);
@@ -50,7 +43,7 @@ public class ArticleProcessor {
         return stringArticleHashMap;
     }
 
-    private static String readArticleContent(ArticleResult articleResult, FileBackedCache articleCache, String normalizedTitle) throws IOException, InvalidNews24CookieException {
+    private static String readArticleContent(ArticleResult articleResult, FileBackedCache articleCache, String normalizedTitle) throws IOException, InvalidCookieException {
         return articleCache.get(articleResult.getArticleUrl(), normalizedTitle + ".xhtml");
     }
 
