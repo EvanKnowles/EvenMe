@@ -22,14 +22,13 @@ public class FileBackedCache extends Cache {
     @Override
     public String get(String populateDetail, String title) throws IOException, InvalidCookieException {
         String contents = queryFromCache(title);
-        if (contents != null) {
-            LOG.debug("\"{}\" was already in cache", title);
-            return contents;
+        if (contents == null) {
+            contents = readFromUnderlyingSource(populateDetail);
+            Files.write(determineFileForCache(title), contents.getBytes(StandardCharsets.UTF_8));
+            LOG.info("Cached: \"{}\"", title);
+        } else {
+            LOG.debug("Already in cache:- \"{}\"", title);
         }
-
-        contents = readFromUnderlyingSource(populateDetail);
-        Files.write(determineFileForCache(title), contents.getBytes(StandardCharsets.UTF_8));
-        LOG.info("Processed: \"{}\"", title);
 
         return contents;
     }
