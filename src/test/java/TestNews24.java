@@ -5,7 +5,6 @@ import za.co.knonchalant.evenme.Environment;
 import za.co.knonchalant.evenme.cache.CacheException;
 import za.co.knonchalant.evenme.cache.FileBackedCache;
 import za.co.knonchalant.evenme.chatgpt.cypher.ChatGPTCypherBuilder;
-import za.co.knonchalant.evenme.scrape.iol.IOLArticleListRetriever;
 import za.co.knonchalant.evenme.scrape.news24.InvalidCookieException;
 import za.co.knonchalant.evenme.scrape.news24.ArticleProcessor;
 import za.co.knonchalant.evenme.scrape.news24.News24ArticleListRetriever;
@@ -14,7 +13,6 @@ import za.co.knonchalant.evenme.scrape.sowetan.SowetanArticleListRetriever;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 
 public class TestNews24 {
@@ -35,7 +33,7 @@ public class TestNews24 {
             }
 
         } catch (CacheException e) {
-            LOG.error("News24 cookie has expired, quitting.");
+            LOG.error(e.getMessage(), e);
         }
     }
 
