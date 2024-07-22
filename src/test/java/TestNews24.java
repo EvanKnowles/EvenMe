@@ -20,8 +20,9 @@ public class TestNews24 {
     private static final Logger LOG = LoggerFactory.getLogger(TestNews24.class);
 
     public static void main(String[] args) throws IOException, InvalidCookieException {
-        FileBackedCache cypherCache = new FileBackedCache(resolveCachePath("cypher"), new ChatGPTCypherBuilder());
         Environment environment = Environment.fromHardcode();
+
+        FileBackedCache cypherCache = new FileBackedCache(resolveCachePath("cypher"), new ChatGPTCypherBuilder(environment));
 
         ArticleProcessor news24 = new ArticleProcessor(new News24ArticleListRetriever(environment), new SowetanArticleListRetriever());
 

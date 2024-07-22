@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class ChatGPT {
-    public static final String KEY = "CHATKEY";
-
-    public static ChatGPTResponse submit(String prompt) throws IOException {
+    public static ChatGPTResponse submit(String prompt, String key) throws IOException {
         ChatGPTRequest chatGPTRequest = new ChatGPTRequest();
         chatGPTRequest.setTemperature(0.2);
         chatGPTRequest.setModel("gpt-4o");
@@ -21,7 +19,7 @@ public class ChatGPT {
         chatGPTRequest.setMessages(List.of(message));
         return REST.url("https://api.openai.com/v1/chat/completions")
                 .body(chatGPTRequest)
-                .authorization(KEY)
+                .authorization(key)
                 .post(ChatGPTResponse.class);
     }
 }

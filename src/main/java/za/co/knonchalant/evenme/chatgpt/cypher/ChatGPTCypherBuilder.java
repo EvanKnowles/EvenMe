@@ -1,5 +1,6 @@
 package za.co.knonchalant.evenme.chatgpt.cypher;
 
+import za.co.knonchalant.evenme.Environment;
 import za.co.knonchalant.evenme.cache.CachePopulator;
 import za.co.knonchalant.evenme.chatgpt.ChatGPT;
 import za.co.knonchalant.evenme.chatgpt.domain.ChatGPTResponse;
@@ -15,9 +16,16 @@ public class ChatGPTCypherBuilder implements CachePopulator {
                     "Include descriptions as attributes on nodes.\n" +
                     "Include dates where available as attributes on nodes.";
 
+    private final String key;
+
+    public ChatGPTCypherBuilder(Environment environment)
+    {
+        this.key = environment.chatGPTKey;
+    }
+
     @Override
     public String populate(String articleContent) throws IOException {
-        ChatGPTResponse submit = ChatGPT.submit(PROMPT + "\n" + articleContent);
+        ChatGPTResponse submit = ChatGPT.submit(PROMPT + "\n" + articleContent, key);
         return submit.getChoices().get(0).getMessage().getContent();
     }
 }
