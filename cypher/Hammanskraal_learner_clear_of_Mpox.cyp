@@ -1,0 +1,20 @@
+```cypher
+MERGE (event:Event {name: "Mpox Case in Hammanskraal", description: "A Hammanskraal learner suspected of having Mpox was given a clean bill of health.", date: "2023-10-08"})
+MERGE (individual:Individual {name: "Steve Mabona", description: "Gauteng department of education spokesperson"})
+MERGE (individual2:Individual {name: "Foster Mohale", description: "Department of health spokesperson"})
+MERGE (organization:Organization {name: "National Institute For Communicable Diseases of South Africa", description: "NICD"})
+MERGE (organization2:Organization {name: "Department of Health", description: "South African Department of Health"})
+MERGE (organization3:Organization {name: "Department of Education", description: "South African Department of Education"})
+MERGE (organization4:Organization {name: "Iketleng Primary School", description: "Primary school in Hammanskraal"})
+MERGE (outcome:Outcome {description: "Learner given a clean bill of health", date: "2023-10-08"})
+MERGE (outcome2:Outcome {description: "No new cases of Mpox recorded last week", date: "2023-10-08"})
+
+MERGE (event)-[:INVOLVES]->(individual)
+MERGE (event)-[:INVOLVES]->(individual2)
+MERGE (event)-[:INVOLVES]->(organization)
+MERGE (event)-[:INVOLVES]->(organization2)
+MERGE (event)-[:INVOLVES]->(organization3)
+MERGE (event)-[:INVOLVES]->(organization4)
+MERGE (event)-[:RESULTED_IN]->(outcome)
+MERGE (event)-[:RESULTED_IN]->(outcome2)
+```
