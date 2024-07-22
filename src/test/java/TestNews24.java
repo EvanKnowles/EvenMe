@@ -25,13 +25,7 @@ public class TestNews24 {
         FileBackedCache cypherCache = new FileBackedCache(resolveCachePath("cypher"), new ChatGPTCypherBuilder());
         Environment environment = Environment.fromHardcode();
 
-        Map<String, String> cookies = new HashMap<>();
-        // guess we should generify these... somehow
-        cookies.put("24cat", environment.catCookie);
-        cookies.put("24uat", environment.uatCookie);
-        cookies.put("24uid", environment.uidCookie);
-
-        ArticleProcessor news24 = new ArticleProcessor(new News24ArticleListRetriever(cookies), new SowetanArticleListRetriever());
+        ArticleProcessor news24 = new ArticleProcessor(new News24ArticleListRetriever(environment), new SowetanArticleListRetriever());
 
         try {
             Map<String, Article> articles = news24.get();

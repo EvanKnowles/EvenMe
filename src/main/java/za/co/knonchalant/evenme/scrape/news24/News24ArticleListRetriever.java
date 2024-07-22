@@ -2,6 +2,7 @@ package za.co.knonchalant.evenme.scrape.news24;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import za.co.knonchalant.evenme.Environment;
 import za.co.knonchalant.evenme.cache.CachePopulator;
 import za.co.knonchalant.evenme.client.REST;
 import za.co.knonchalant.evenme.scrape.ArticleListRetriever;
@@ -18,8 +19,11 @@ public class News24ArticleListRetriever implements ArticleListRetriever {
 
     private final Map<String, String> cookies;
 
-    public News24ArticleListRetriever(Map<String, String> cookies) {
-        this.cookies = cookies;
+    public News24ArticleListRetriever(Environment environment) {
+        this.cookies = new HashMap<>();
+        cookies.put("24cat", environment.catCookie);
+        cookies.put("24uat", environment.uatCookie);
+        cookies.put("24uid", environment.uidCookie);
     }
 
     @Override
