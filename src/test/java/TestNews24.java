@@ -13,9 +13,11 @@ import za.co.knonchalant.evenme.scrape.news24.News24ArticleListRetriever;
 import za.co.knonchalant.evenme.scrape.sowetan.SowetanArticleListRetriever;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TestNews24 {
 
@@ -30,20 +32,27 @@ public class TestNews24 {
 
         Neo neo = Neo.connect(environment);
         // Turn this on if you want it:
-        // clearDatabase(neo);
+        //clearDatabase(neo);
+        //repopulateAllCypherFiles(neo);
 
         try {
             Map<String, Article> articles = news24.get();
             for (Map.Entry<String, Article> stringArticleEntry : articles.entrySet()) {
                 Article article = stringArticleEntry.getValue();
                 CacheRecord cypherResult = readCypherContent(cypherCache, article.getArticle(), article.getNormalized());
-                if (!cypherResult.wasCacheHit()) {
+                if (!cypherResult.wasCacheHit() && cypherResult.getResult().isEmpty()) {
                     persistGraphDBNodes(neo, cypherResult.getResult());
                 }
             }
 
         } catch (CacheException e) {
             LOG.error(e.getMessage(), e);
+        }
+    }
+
+    private static void repopulateAllCypherFiles(Neo neo) throws IOException {
+        for (Path cypher : Files.find(resolveCachePath("cypher"), 1, (path, basicFileAttributes) -> path.toFile().isFile()).collect(Collectors.toList())) {
+            persistGraphDBNodes(neo, Files.readString(cypher));
         }
     }
 
@@ -57,6 +66,10 @@ public class TestNews24 {
 
     private static void clearDatabase(Neo neo) {
         neo.run("MATCH (n) DETACH DELETE n");
+        neo.run("DROP CONSTRAINT party_name");
+        neo.run("DROP CONSTRAINT individual_name");
+        neo.run("CREATE CONSTRAINT party_name FOR (p:Party) REQUIRE p.name IS UNIQUE");
+        neo.run("CREATE CONSTRAINT individual_name FOR (p:Individual) REQUIRE p.name IS UNIQUE");
     }
 
     private static CacheRecord readCypherContent(FileBackedCache cypherCache, String articleContent, String normalizedTitle) throws IOException, InvalidCookieException {
