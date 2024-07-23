@@ -44,7 +44,7 @@ public class ArticleProcessor {
     }
 
     private static String readArticleContent(ArticleResult articleResult, FileBackedCache articleCache, String normalizedTitle) throws IOException, InvalidCookieException {
-        return articleCache.get(articleResult.getArticleUrl(), normalizedTitle + ".xhtml");
+        return articleCache.get(articleResult.getArticleUrl(), normalizedTitle + ".xhtml").getResult();
     }
 
     private static Path resolveCachePath(String cacheName) {

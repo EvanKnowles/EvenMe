@@ -4,6 +4,7 @@ import za.co.knonchalant.evenme.Article;
 import za.co.knonchalant.evenme.Environment;
 import za.co.knonchalant.evenme.Neo;
 import za.co.knonchalant.evenme.cache.CacheException;
+import za.co.knonchalant.evenme.cache.CacheRecord;
 import za.co.knonchalant.evenme.cache.FileBackedCache;
 import za.co.knonchalant.evenme.chatgpt.cypher.ChatGPTCypherBuilder;
 import za.co.knonchalant.evenme.scrape.news24.InvalidCookieException;
@@ -35,11 +36,9 @@ public class TestNews24 {
             Map<String, Article> articles = news24.get();
             for (Map.Entry<String, Article> stringArticleEntry : articles.entrySet()) {
                 Article article = stringArticleEntry.getValue();
-                String cypherResult = readCypherContent(cypherCache, article.getArticle(), article.getNormalized());
-                cypherResult = cypherResult.replaceAll("```cypher[\r\n]+", "");
-                cypherResult = cypherResult.replaceAll("```", "");
-                if (!cypherResult.isEmpty()) {
-                    neo.run(cypherResult);
+                CacheRecord cypherResult = readCypherContent(cypherCache, article.getArticle(), article.getNormalized());
+                if (!cypherResult.wasCacheHit()) {
+                    persistGraphDBNodes(neo, cypherResult.getResult());
                 }
             }
 
@@ -48,11 +47,19 @@ public class TestNews24 {
         }
     }
 
+    private static void persistGraphDBNodes(Neo neo, String cypher) {
+        cypher = cypher.replaceAll("```cypher[\r\n]+", "");
+        cypher = cypher.replaceAll("```", "");
+        if (!cypher.isEmpty()) {
+            neo.run(cypher);
+        }
+    }
+
     private static void clearDatabase(Neo neo) {
         neo.run("MATCH (n) DETACH DELETE n");
     }
 
-    private static String readCypherContent(FileBackedCache cypherCache, String articleContent, String normalizedTitle) throws IOException, InvalidCookieException {
+    private static CacheRecord readCypherContent(FileBackedCache cypherCache, String articleContent, String normalizedTitle) throws IOException, InvalidCookieException {
         return cypherCache.get(articleContent, normalizedTitle + ".cyp");
     }
 

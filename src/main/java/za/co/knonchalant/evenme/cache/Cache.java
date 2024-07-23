@@ -11,11 +11,11 @@ public abstract class Cache {
         this.cachePopulator = cachePopulator;
     }
 
-    public abstract String get(String populateDetail, String title) throws IOException, InvalidCookieException;
+    public abstract CacheRecord get(String populateDetail, String title) throws IOException, InvalidCookieException;
 
-    protected abstract String queryFromCache(String title) throws IOException;
+    protected abstract CacheRecord queryFromCache(String title) throws IOException;
 
-    protected abstract String readFromUnderlyingSource(String populateDetail) throws IOException, InvalidCookieException;
+    protected abstract CacheRecord readFromUnderlyingSource(String populateDetail) throws IOException, InvalidCookieException;
 
     protected CachePopulator getCachePopulator() {
         return cachePopulator;

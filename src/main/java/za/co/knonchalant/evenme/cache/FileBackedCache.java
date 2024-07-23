@@ -20,28 +20,28 @@ public class FileBackedCache extends Cache {
     }
 
     @Override
-    public String get(String populateDetail, String title) throws IOException, InvalidCookieException {
-        String contents = queryFromCache(title);
-        if (contents == null) {
-            contents = readFromUnderlyingSource(populateDetail);
-            Files.write(determineFileForCache(title), contents.getBytes(StandardCharsets.UTF_8));
+    public CacheRecord get(String populateDetail, String title) throws IOException, InvalidCookieException {
+        CacheRecord record = queryFromCache(title);
+        if (record == null) {
+            record = readFromUnderlyingSource(populateDetail);
+            Files.write(determineFileForCache(title), record.getResult().getBytes(StandardCharsets.UTF_8));
             LOG.info("Cached: \"{}\"", title);
         } else {
             LOG.debug("Already in cache:- \"{}\"", title);
         }
 
-        return contents;
+        return record;
     }
 
     @Override
-    protected String readFromUnderlyingSource(String populateDetail) throws IOException, InvalidCookieException {
-        return getCachePopulator().populate(populateDetail);
+    protected final CacheRecord readFromUnderlyingSource(String populateDetail) throws IOException, InvalidCookieException {
+        return new CacheRecord(getCachePopulator().populate(populateDetail), false);
     }
 
-    protected final String queryFromCache(String title) throws IOException {
+    protected final CacheRecord queryFromCache(String title) throws IOException {
         Path article = determineFileForCache(title);
         if (article.toFile().exists()) {
-            return Files.readString(article);
+            return new CacheRecord(Files.readString(article), true);
         }
         return null;
     }
