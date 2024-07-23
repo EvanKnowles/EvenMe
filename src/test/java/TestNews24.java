@@ -2,6 +2,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import za.co.knonchalant.evenme.Article;
 import za.co.knonchalant.evenme.Environment;
+import za.co.knonchalant.evenme.Neo;
 import za.co.knonchalant.evenme.cache.CacheException;
 import za.co.knonchalant.evenme.cache.FileBackedCache;
 import za.co.knonchalant.evenme.chatgpt.cypher.ChatGPTCypherBuilder;
@@ -26,16 +27,29 @@ public class TestNews24 {
 
         ArticleProcessor news24 = new ArticleProcessor(new News24ArticleListRetriever(environment), new SowetanArticleListRetriever());
 
+        Neo neo = Neo.connect(environment);
+        // Turn this on if you want it:
+        // clearDatabase(neo);
+
         try {
             Map<String, Article> articles = news24.get();
             for (Map.Entry<String, Article> stringArticleEntry : articles.entrySet()) {
                 Article article = stringArticleEntry.getValue();
                 String cypherResult = readCypherContent(cypherCache, article.getArticle(), article.getNormalized());
+                cypherResult = cypherResult.replaceAll("```cypher[\r\n]+", "");
+                cypherResult = cypherResult.replaceAll("```", "");
+                if (!cypherResult.isEmpty()) {
+                    neo.run(cypherResult);
+                }
             }
 
         } catch (CacheException e) {
             LOG.error(e.getMessage(), e);
         }
+    }
+
+    private static void clearDatabase(Neo neo) {
+        neo.run("MATCH (n) DETACH DELETE n");
     }
 
     private static String readCypherContent(FileBackedCache cypherCache, String articleContent, String normalizedTitle) throws IOException, InvalidCookieException {

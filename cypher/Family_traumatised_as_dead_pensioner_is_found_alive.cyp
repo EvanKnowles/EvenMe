@@ -1,0 +1,37 @@
+```cypher
+MERGE (event:Event {name: "Patient Mix-up at Gelukspan Hospital", description: "A mix-up of patients' surnames at a hospital left a family traumatised after being incorrectly informed of a death.", date: "2024-07-11"})
+MERGE (individual1:Individual {name: "Dorothy Magape", description: "Elderly woman mistakenly declared dead"})
+MERGE (individual2:Individual {name: "Nosmanga Skosana", description: "Niece of Dorothy Magape"})
+MERGE (individual3:Individual {name: "Patrick Magape", description: "Son of Dorothy Magape"})
+MERGE (individual4:Individual {name: "Sardie Magape", description: "Daughter of Dorothy Magape"})
+MERGE (individual5:Individual {name: "Magoo", description: "Deceased patient whose surname was confused with Magape"})
+MERGE (individual6:Individual {name: "Tebogo Lekgethwane", description: "Head of communications, North West department of health"})
+MERGE (organization:Organization {name: "Gelukspan Hospital", description: "Hospital where the mix-up occurred"})
+MERGE (organization2:Organization {name: "North West Department of Health", description: "Department overseeing health services in North West"})
+
+MERGE (individual1)-[:WAS_PATIENT_AT]->(organization)
+MERGE (individual5)-[:WAS_PATIENT_AT]->(organization)
+MERGE (individual2)-[:VISITED]->(individual1)
+MERGE (individual3)-[:FAMILY_MEMBER_OF]->(individual1)
+MERGE (individual4)-[:FAMILY_MEMBER_OF]->(individual1)
+MERGE (individual6)-[:REPRESENTS]->(organization2)
+MERGE (organization)-[:UNDER]->(organization2)
+
+MERGE (event)-[:INVOLVED]->(individual1)
+MERGE (event)-[:INVOLVED]->(individual2)
+MERGE (event)-[:INVOLVED]->(individual3)
+MERGE (event)-[:INVOLVED]->(individual4)
+MERGE (event)-[:INVOLVED]->(individual5)
+MERGE (event)-[:INVOLVED]->(individual6)
+MERGE (event)-[:OCCURRED_AT]->(organization)
+
+MERGE (outcome1:Outcome {description: "Family traumatised and made funeral arrangements"})
+MERGE (outcome2:Outcome {description: "Hospital apologised for the mix-up"})
+MERGE (outcome3:Outcome {description: "Internal investigation conducted"})
+MERGE (outcome4:Outcome {description: "Psychological support to be provided to the family"})
+
+MERGE (event)-[:RESULTED_IN]->(outcome1)
+MERGE (event)-[:RESULTED_IN]->(outcome2)
+MERGE (event)-[:RESULTED_IN]->(outcome3)
+MERGE (event)-[:RESULTED_IN]->(outcome4)
+```

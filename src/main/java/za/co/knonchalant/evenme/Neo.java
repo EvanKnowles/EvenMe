@@ -8,14 +8,27 @@ import org.neo4j.driver.types.Relationship;
 import java.util.*;
 
 public class Neo {
+    private final Driver driver;
 
-    private static final Driver DRIVER;
-
-    static {
-        DRIVER = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("evenme", "evenme"));
+    private Neo(Driver driver) {
+        this.driver = driver;
     }
 
-    static List<Node> find(String label, Map<String, String> args) {
+    public static Neo connect(Environment environment) {
+        Driver driver = GraphDatabase.driver(environment.neo4jURI, AuthTokens.basic(environment.neo4jUser, environment.neo4jPassword));
+        return new Neo(driver);
+    }
+
+    public void run(String query) {
+        try (Session session = driver.session(SessionConfig.defaultConfig())) {
+            session.writeTransaction(transaction -> {
+                transaction.run(query);
+                return null;
+            });
+        }
+    }
+
+    List<Node> find(String label, Map<String, String> args) {
         StringBuilder query = new StringBuilder("match (n:");
         query.append(label).append(" {");
         for (Map.Entry<String, String> argEntry : args.entrySet()) {
@@ -25,7 +38,7 @@ public class Neo {
         substring += "}) return n";
 
         final String finalQuery = substring;
-        try (Session session = DRIVER.session(SessionConfig.forDatabase("evenme"))) {
+        try (Session session = driver.session(forDB())) {
             List<Record> value = session.writeTransaction(transaction -> {
                 Result result = transaction.run(finalQuery);
                 return result.list();
@@ -40,14 +53,20 @@ public class Neo {
         }
     }
 
-    static Node create(String label, Map<String, Object> params) {
+    private static SessionConfig forDB() {
+        return SessionConfig.defaultConfig();
+        // I have a suspicion that for local DB, this is needed:
+//        return SessionConfig.forDatabase("evenme");
+    }
+
+    Node create(String label, Map<String, Object> params) {
         StringBuilder paramQuery = new StringBuilder();
         for (Map.Entry<String, Object> stringObjectEntry : params.entrySet()) {
             paramQuery.append("set n.").append(stringObjectEntry.getKey()).append(" = $").append(stringObjectEntry.getKey()).append(" ");
         }
 
         String create = String.format("CREATE (n:" + label + ") %s RETURN n;", paramQuery.toString());
-        try (Session session = DRIVER.session(SessionConfig.forDatabase("evenme"))) {
+        try (Session session = driver.session(forDB())) {
             Value value = session.writeTransaction(transaction -> {
                 Result result = transaction.run(create, params);
                 return result.single().get(0);
@@ -56,7 +75,7 @@ public class Neo {
         }
     }
 
-    public static Relationship link(Node one, Node two, String relationship) {
+    public Relationship link(Node one, Node two, String relationship) {
         String query = "match (one), (two) where ID(one) = $one and ID(two) = $two \n" +
                 "merge (one)-[r:" + relationship + "]->(two)\n" +
                 "return r;";
@@ -65,7 +84,7 @@ public class Neo {
         params.put("one", one.id());
         params.put("two", two.id());
 
-        try (Session session = DRIVER.session(SessionConfig.forDatabase("evenme"))) {
+        try (Session session = driver.session(forDB())) {
             Value value = session.writeTransaction(transaction -> {
                 Result result = transaction.run(query, params);
                 return result.single().get(0);
@@ -74,7 +93,7 @@ public class Neo {
         }
     }
 
-    public static Node update(Node node, Map<String, String> newParams) {
+    public Node update(Node node, Map<String, String> newParams) {
         String queryPattern = "match (one) where ID(one) = $one\n" +
                 "%s" +
                 "return one;";
@@ -88,7 +107,7 @@ public class Neo {
         HashMap<String, Object> params = new HashMap<>(newParams);
         params.put("one", node.id());
 
-        try (Session session = DRIVER.session(SessionConfig.forDatabase("evenme"))) {
+        try (Session session = driver.session(forDB())) {
             Value value = session.writeTransaction(transaction -> {
                 Result result = transaction.run(query, params);
                 return result.single().get(0);
