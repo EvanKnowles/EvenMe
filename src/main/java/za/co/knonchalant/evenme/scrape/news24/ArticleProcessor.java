@@ -34,9 +34,13 @@ public class ArticleProcessor {
             FileBackedCache articleCache = new FileBackedCache(resolveCachePath("articles"), retriever.getCachePopulator());
 
             for (ArticleResult articleResult : articleResults) {
-                String normalizedTitle = normalizeTitle(articleResult.getTitle());
-                String articleContent = readArticleContent(articleResult, articleCache, normalizedTitle);
-                stringArticleHashMap.put(articleResult.getTitle(), new Article(articleResult.getTitle(), articleResult.getArticleUrl(), articleContent, normalizedTitle));
+                try {
+                    String normalizedTitle = normalizeTitle(articleResult.getTitle());
+                    String articleContent = readArticleContent(articleResult, articleCache, normalizedTitle);
+                    stringArticleHashMap.put(articleResult.getTitle(), new Article(articleResult.getTitle(), articleResult.getArticleUrl(), articleContent, normalizedTitle));
+                } catch (Exception e) {
+                    LOG.error(e + " \n    while reading " + articleResult.getArticleUrl());
+                }
             }
         }
 

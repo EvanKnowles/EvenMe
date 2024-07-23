@@ -10,13 +10,10 @@ import za.co.knonchalant.evenme.scrape.news24.domain.ArticleResult;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class News24ArticleListRetriever implements ArticleListRetriever {
-    public static final String URL = "https://cms.capi24.com/v2/Articles/category/%2Fnews24%2Fpolitics?pageNo=1&pageSize=15";
-
+    private static final int LAST_PAGE = 2;
     private final Map<String, String> cookies;
 
     public News24ArticleListRetriever(Environment environment) {
@@ -29,16 +26,25 @@ public class News24ArticleListRetriever implements ArticleListRetriever {
     @Override
     public List<ArticleResult> retrieveArticlesList() throws IOException {
         Map<String, String> headers = buildHeaders();
-        String result = REST.url(URL).headers(headers).get();
+        List<ArticleResult> allResults = new LinkedList<>();
 
-        Type type = new TypeToken<List<ArticleResult>>() {
-        }.getType();
+        for (int page = 1; page <= LAST_PAGE; page++) {
+            String result = REST.url(buildURL(page)).headers(headers).get();
 
-        List<ArticleResult> articleResults = new Gson().fromJson(result, type);
+            Type type = new TypeToken<List<ArticleResult>>() {
+            }.getType();
 
-        articleResults.removeIf(a -> a.getTitle().startsWith("LIVE |") || a.getTitle().startsWith("BREAKING |"));
+            List<ArticleResult> articleResults = new Gson().fromJson(result, type);
 
-        return articleResults;
+            articleResults.removeIf(a -> a.getTitle().startsWith("LIVE |") || a.getTitle().startsWith("BREAKING |"));
+            allResults.addAll(articleResults);
+        }
+
+        return allResults;
+    }
+
+    private static String buildURL(int pageNumber) {
+        return "https://cms.capi24.com/v2/Articles/category/%2Fnews24%2Fpolitics?pageNo=" + pageNumber + "&pageSize=15";
     }
 
     @Override

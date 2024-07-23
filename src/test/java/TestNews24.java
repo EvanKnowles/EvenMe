@@ -70,4 +70,6 @@ public class TestNews24 {
         }
         return cache;
     }
+
+
 }

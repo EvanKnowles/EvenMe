@@ -2,15 +2,15 @@ package za.co.knonchalant.evenme.scrape.iol;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import za.co.knonchalant.evenme.cache.CachePopulator;
 import za.co.knonchalant.evenme.scrape.news24.InvalidCookieException;
+import za.co.knonchalant.evenme.scrape.news24.Scraper;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-public class IOLScraper implements CachePopulator {
+public class IOLScraper extends Scraper {
     @Override
-    public String populate(String populateDetail) throws InvalidCookieException, IOException {
+    public String scrape(String populateDetail) throws InvalidCookieException, IOException {
         HashMap<String, String> headers = new HashMap<>();
         headers.put("Cookie", "sessionId=99e717ff-d785-4b42-ad02-58b2ef2fc451; visitorId=ztt0yauo2");
         Document document = Jsoup.connect(populateDetail)

@@ -6,4 +6,5 @@ import java.io.IOException;
 
 public interface CachePopulator {
     String populate(String populateDetail) throws InvalidCookieException, IOException;
+
 }
