@@ -12,7 +12,7 @@ public class ChatGPTCypherBuilder implements CachePopulator {
             "First judge if this is an article about political events or politicians. If it is not, then only return a blank line.\n" +
                     "Otherwise: \n" +
                     "* Create Cypher syntax for all facts from the following news article. Only output the Cypher result, nothing else.\n" +
-                    "* Use MERGE with partial matches, ON CREATE and ON MATCH to ensure that all inserts are idempotent. \n" +
+                    "* Use MERGE with partial matches for all nodes. Generate both ON CREATE and ON MATCH clauses for all updates. \n" +
                     "* Create links between nodes. \n" +
                     "* Use the following terms: Event, Individual, Outcome, Company, Party, Organization.\n" +
                     "* Store descriptions as attributes on nodes.\n" +

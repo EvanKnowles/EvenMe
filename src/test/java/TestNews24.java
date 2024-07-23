@@ -32,22 +32,32 @@ public class TestNews24 {
 
         Neo neo = Neo.connect(environment);
         // Turn this on if you want it:
-        //clearDatabase(neo);
+        // clearDatabase(neo);
         //repopulateAllCypherFiles(neo);
 
         try {
             Map<String, Article> articles = news24.get();
             for (Map.Entry<String, Article> stringArticleEntry : articles.entrySet()) {
                 Article article = stringArticleEntry.getValue();
-                CacheRecord cypherResult = readCypherContent(cypherCache, article.getArticle(), article.getNormalized());
-                if (!cypherResult.wasCacheHit() && cypherResult.getResult().isEmpty()) {
-                    persistGraphDBNodes(neo, cypherResult.getResult());
+                if (!shouldIgnore(article)) {
+                    CacheRecord cypherResult = readCypherContent(cypherCache, article.getArticle(), article.getNormalized());
+                    if (!cypherResult.wasCacheHit() && !cypherResult.getResult().isEmpty()) {
+                        persistGraphDBNodes(neo, cypherResult.getResult());
+                    }
                 }
             }
 
         } catch (CacheException e) {
             LOG.error(e.getMessage(), e);
         }
+    }
+
+    private static boolean shouldIgnore(Article article) {
+        boolean b = true;  // JOHN: b = true. EVAN: b = false
+        if (article.getNormalized().toUpperCase().charAt(0) >= 'N') {
+            b = !b;
+        }
+        return b;
     }
 
     private static void repopulateAllCypherFiles(Neo neo) throws IOException {
