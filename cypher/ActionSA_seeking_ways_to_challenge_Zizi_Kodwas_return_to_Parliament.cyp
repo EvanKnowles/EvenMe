@@ -1,0 +1,22 @@
+```cypher
+MERGE (event1:Event {name: "Kodwa Corruption Accusation", description: "Zizi Kodwa accused of receiving R1.6 million in bribes", date: "2023-06"})
+MERGE (individual1:Individual {name: "Zizi Kodwa", description: "Member of Parliament accused of corruption"})
+MERGE (individual2:Individual {name: "Athol Trollip", description: "ActionSA member"})
+MERGE (party1:Party {name: "ActionSA", description: "Political party focused on ethical leadership"})
+MERGE (party2:Party {name: "EFF", description: "Economic Freedom Fighters, political party"})
+MERGE (individual3:Individual {name: "Cyril Ramaphosa", description: "President of South Africa"})
+MERGE (event2:Event {name: "Phala Phala Saga", description: "Cyril Ramaphosa accused of holding undeclared foreign currency", date: "2023"})
+MERGE (individual4:Individual {name: "John Hlophe", description: "Judge appointed to the Judicial Service Commission"})
+MERGE (organization1:Organization {name: "Judicial Service Commission", description: "Commission overseeing the judiciary in South Africa"})
+
+MERGE (individual1)-[:INVOLVED_IN]->(event1)
+MERGE (party1)-[:INVESTIGATES]->(event1)
+MERGE (individual2)-[:REPRESENTS]->(party1)
+MERGE (individual2)-[:COMMENTED_ON]->(event1)
+MERGE (party1)-[:SUPPORTS]->(party2)
+MERGE (party2)-[:PROPOSED]->(event2)
+MERGE (individual3)-[:INVOLVED_IN]->(event2)
+MERGE (individual2)-[:COMMENTED_ON]->(event2)
+MERGE (individual4)-[:APPOINTED_TO]->(organization1)
+MERGE (individual4)-[:INVOLVED_IN]->(event1)
+```
