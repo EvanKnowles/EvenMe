@@ -74,9 +74,9 @@ public class PhotoConverterMain {
             output = new ConcentricRingConverter(interval, lineThick, hueShift, blurSigma, perturb, cx, cy).convert(input);
 
         } else {
-            int   spacing   = args.length > 2 ? Integer.parseInt(args[2]) : 10;
+            int   spacing   = args.length > 2 ? Integer.parseInt(args[2]) : 18;
             int   lineThick = args.length > 3 ? Integer.parseInt(args[3]) : 2;
-            float hueShift  = args.length > 4 ? Float.parseFloat(args[4]) : -0.12f;
+            float hueShift  = args.length > 4 ? Float.parseFloat(args[4]) : 0f;
             float blurSigma = args.length > 5 ? Float.parseFloat(args[5]) : 2.0f;
             float perturb   = args.length > 6 ? Float.parseFloat(args[6]) : 20f;
             float cx        = args.length > 7 ? Float.parseFloat(args[7]) : 0.5f;

@@ -52,7 +52,7 @@ public class SpiralConverter {
     }
 
     public static SpiralConverter defaultStyle() {
-        return new SpiralConverter(10, 2, -0.12f, 2.0f, 20f, 0.5f, 0.5f);
+        return new SpiralConverter(18, 2, 0f, 2.0f, 20f, 0.5f, 0.5f);
     }
 
     public BufferedImage convert(BufferedImage input) {
@@ -102,26 +102,24 @@ public class SpiralConverter {
     // -------------------------------------------------------------------------
 
     private int renderSeparator(int rgb, float lum) {
+        // Near-black separator — very slight colour tint from original
         float[] hsb = toHsb(rgb);
-        float hue = wrapHue(hsb[0] + hueShift);
-        float sat = clamp(hsb[1] * 0.6f + 0.1f, 0, 1);
-        float bri = clamp(lum / 255f * 0.04f, 0, 1);
-        return Color.HSBtoRGB(hue, sat, bri);
+        return Color.HSBtoRGB(hsb[0], hsb[1] * 0.5f, clamp(lum / 255f * 0.05f, 0, 1));
     }
 
     private int renderBand(int rgb, float lum, int posInBand) {
         float[] hsb = toHsb(rgb);
 
-        // Small hue shift across each arm makes adjacent arms visually distinct
+        // Keep the original hue — only apply the user-supplied shift
+        float hue = wrapHue(hsb[0] + hueShift);
+
+        // Moderate saturation boost so colours stay recognisable
+        float sat = clamp(hsb[1] * 1.3f + 0.1f, 0, 1);
+
+        // Brightness: faithful to original, gently scaled to keep dark mood
+        // Ramp up slightly toward the middle of the band for a soft glow effect
         float armPhase = (float) posInBand / armSpacing;
-        float hue = wrapHue(hsb[0] + hueShift + armPhase * 0.04f);
-
-        float sat = clamp(hsb[1] * 1.8f + 0.2f, 0, 1);
-
-        // Brightness: darker near separator, brighter toward arm centre
-        float rawBri = lum / 255f;
-        float bri    = 0.12f + rawBri * 0.55f + armPhase * 0.10f;
-        bri = clamp(bri, 0, 1);
+        float bri = clamp(lum / 255f * 0.85f + armPhase * 0.08f, 0, 1);
 
         return Color.HSBtoRGB(hue, sat, bri);
     }
